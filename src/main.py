@@ -134,9 +134,10 @@ class Saugbot:
     def cleanup(self):
         """Clean up all resources."""
         self.stop()
+        # Cleanup in richtiger Reihenfolge: zuerst brush, dann motor (GPIO.cleanup)
+        self.brush.cleanup()
         self.motor.cleanup()
         self.sensors.cleanup()
-        self.brush.cleanup()
         print("Saugbot cleanup complete")
 
 

@@ -30,7 +30,14 @@ class SideBrush:
     
     def stop(self):
         """Stop the side brush."""
-        GPIO.output(SIDE_BRUSH_RELAY, GPIO.LOW)
+        try:
+            # Prüfe ob GPIO noch initialisiert ist
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(SIDE_BRUSH_RELAY, GPIO.OUT)
+            GPIO.output(SIDE_BRUSH_RELAY, GPIO.LOW)
+        except RuntimeError:
+            # GPIO wurde bereits zurückgesetzt, ignoriere
+            pass
         self.is_running = False
         print("Side brush stopped")
     
