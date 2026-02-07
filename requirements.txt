@@ -1,0 +1,15 @@
+# Saugbot Python Dependencies
+# Install with: pip3 install -r requirements.txt
+
+# GPIO Control
+RPi.GPIO>=0.7.1
+
+# Environment Variables (optional, for .env file support)
+python-dotenv>=1.0.0
+
+# Future: RPLIDAR support (when hardware arrives)
+# rplidar-roboticia>=1.0.0
+
+# Testing (optional, for development)
+pytest>=7.4.0
+pytest-cov>=4.1.0

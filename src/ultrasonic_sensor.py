@@ -1,0 +1,151 @@
+"""
+Ultrasonic Sensor Module for Saugbot
+Handles HC-SR04 distance measurement with level shifter support.
+"""
+
+import RPi.GPIO as GPIO
+import time
+from config import (
+    ULTRASONIC_FRONT_TRIGGER, ULTRASONIC_FRONT_ECHO,
+    ULTRASONIC_LEFT_TRIGGER, ULTRASONIC_LEFT_ECHO,
+    ULTRASONIC_RIGHT_TRIGGER, ULTRASONIC_RIGHT_ECHO,
+    ULTRASONIC_TIMEOUT, SOUND_SPEED
+)
+
+
+class UltrasonicSensor:
+    """Controls a single HC-SR04 ultrasonic sensor."""
+    
+    def __init__(self, trigger_pin, echo_pin, name="Sensor"):
+        """Initialize ultrasonic sensor.
+        
+        Args:
+            trigger_pin: GPIO pin for trigger signal
+            echo_pin: GPIO pin for echo signal (via level shifter)
+            name: Descriptive name for this sensor
+        """
+        self.trigger_pin = trigger_pin
+        self.echo_pin = echo_pin
+        self.name = name
+        
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+        
+        # Setup pins
+        GPIO.setup(self.trigger_pin, GPIO.OUT)
+        GPIO.setup(self.echo_pin, GPIO.IN)
+        
+        # Initialize trigger to LOW
+        GPIO.output(self.trigger_pin, GPIO.LOW)
+        time.sleep(0.1)  # Allow sensor to settle
+        
+        print(f"{self.name} initialized (Trigger: {trigger_pin}, Echo: {echo_pin})")
+    
+    def get_distance_cm(self):
+        """Measure distance in centimeters.
+        
+        Returns:
+            Distance in cm, or None if measurement failed/timeout
+        """
+        # Send trigger pulse (10us minimum)
+        GPIO.output(self.trigger_pin, GPIO.HIGH)
+        time.sleep(0.00001)  # 10 microseconds
+        GPIO.output(self.trigger_pin, GPIO.LOW)
+        
+        # Wait for echo to go HIGH
+        start_time = time.time()
+        timeout = start_time + ULTRASONIC_TIMEOUT
+        
+        while GPIO.input(self.echo_pin) == GPIO.LOW:
+            if time.time() > timeout:
+                return None
+            start_time = time.time()
+        
+        # Wait for echo to go LOW
+        end_time = time.time()
+        timeout = end_time + ULTRASONIC_TIMEOUT
+        
+        while GPIO.input(self.echo_pin) == GPIO.HIGH:
+            if time.time() > timeout:
+                return None
+            end_time = time.time()
+        
+        # Calculate distance
+        pulse_duration = end_time - start_time
+        distance_cm = (pulse_duration * SOUND_SPEED * 100) / 2
+        
+        # HC-SR04 range is 2-400cm, filter invalid readings
+        if distance_cm < 2 or distance_cm > 400:
+            return None
+        
+        return distance_cm
+    
+    def get_distance_m(self):
+        """Measure distance in meters.
+        
+        Returns:
+            Distance in meters, or None if measurement failed
+        """
+        distance_cm = self.get_distance_cm()
+        if distance_cm is None:
+            return None
+        return distance_cm / 100.0
+
+
+class UltrasonicSensorArray:
+    """Manages all three ultrasonic sensors."""
+    
+    def __init__(self):
+        """Initialize all three sensors."""
+        self.front = UltrasonicSensor(
+            ULTRASONIC_FRONT_TRIGGER,
+            ULTRASONIC_FRONT_ECHO,
+            "Front Sensor"
+        )
+        self.left = UltrasonicSensor(
+            ULTRASONIC_LEFT_TRIGGER,
+            ULTRASONIC_LEFT_ECHO,
+            "Left Sensor"
+        )
+        self.right = UltrasonicSensor(
+            ULTRASONIC_RIGHT_TRIGGER,
+            ULTRASONIC_RIGHT_ECHO,
+            "Right Sensor"
+        )
+    
+    def get_all_distances(self):
+        """Get distances from all sensors.
+        
+        Returns:
+            Dictionary with 'front', 'left', 'right' distances in cm
+        """
+        return {
+            'front': self.front.get_distance_cm(),
+            'left': self.left.get_distance_cm(),
+            'right': self.right.get_distance_cm()
+        }
+    
+    def cleanup(self):
+        """Clean up GPIO resources."""
+        # GPIO cleanup is handled automatically, but we can add logging
+        print("UltrasonicSensorArray cleaned up")
+
+
+if __name__ == "__main__":
+    # Test ultrasonic sensors
+    sensors = UltrasonicSensorArray()
+    
+    try:
+        print("Testing ultrasonic sensors...")
+        for i in range(10):
+            distances = sensors.get_all_distances()
+            print(f"Front: {distances['front']:.1f}cm | "
+                  f"Left: {distances['left']:.1f}cm | "
+                  f"Right: {distances['right']:.1f}cm")
+            time.sleep(1)
+    
+    except KeyboardInterrupt:
+        print("\nInterrupted by user")
+    finally:
+        sensors.cleanup()
+        GPIO.cleanup()
