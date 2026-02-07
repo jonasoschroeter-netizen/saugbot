@@ -53,7 +53,11 @@ def check_for_updates():
 
 def update_repository():
     """Hole Updates vom GitHub."""
-    print("🔄 Updates gefunden! Starte Update...")
+    import sys
+    msg = "🔄 Updates gefunden! Starte Update...\n"
+    print(msg)
+    sys.stderr.write(msg)
+    sys.stderr.flush()
     
     # Stash lokale Änderungen (falls vorhanden)
     run_command("git stash")
@@ -62,11 +66,18 @@ def update_repository():
     success, stdout, stderr = run_command(f"git pull origin {GIT_BRANCH}")
     
     if success:
-        print("✅ Repository erfolgreich aktualisiert!")
+        msg = "✅ Repository erfolgreich aktualisiert!\n"
+        print(msg)
         print(stdout)
+        sys.stderr.write(msg)
+        sys.stderr.write(stdout)
+        sys.stderr.flush()
         return True
     else:
-        print(f"❌ Fehler beim Update: {stderr}")
+        msg = f"❌ Fehler beim Update: {stderr}\n"
+        print(msg)
+        sys.stderr.write(msg)
+        sys.stderr.flush()
         return False
 
 def restart_application():
@@ -95,6 +106,14 @@ def restart_application():
 
 def main():
     """Haupt-Loop für automatische Updates."""
+    import sys
+    # Output auch nach stderr für systemd logs
+    sys.stderr.write("🚀 Saugbot Auto-Update System gestartet\n")
+    sys.stderr.write(f"📁 Projekt-Verzeichnis: {PROJECT_DIR}\n")
+    sys.stderr.write(f"⏱️  Prüfe alle {CHECK_INTERVAL} Sekunden auf Updates...\n")
+    sys.stderr.write("   (Drücke Ctrl+C zum Beenden)\n\n")
+    sys.stderr.flush()
+    
     print("🚀 Saugbot Auto-Update System gestartet")
     print(f"📁 Projekt-Verzeichnis: {PROJECT_DIR}")
     print(f"⏱️  Prüfe alle {CHECK_INTERVAL} Sekunden auf Updates...")
