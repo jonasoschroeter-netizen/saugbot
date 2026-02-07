@@ -1,0 +1,18 @@
+[Unit]
+Description=Saugbot Main Application
+After=network.target saugbot-auto-update.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/saugbot
+Environment="PYTHONPATH=/home/pi/saugbot"
+ExecStart=/usr/bin/python3 /home/pi/saugbot/src/main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
