@@ -10,6 +10,9 @@ python-dotenv>=1.0.0
 # Future: RPLIDAR support (when hardware arrives)
 # rplidar-roboticia>=1.0.0
 
+# Web Interface
+Flask>=3.0.0
+
 # Testing (optional, for development)
 pytest>=7.4.0
 pytest-cov>=4.1.0
