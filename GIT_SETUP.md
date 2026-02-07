@@ -2,6 +2,9 @@
 
 ## Initial Setup on Raspberry Pi
 
+**✅ Repository ist bereits auf GitHub:** `git@github.com:jonasoschroeter-netizen/saugbot.git`  
+**✅ SSH-Key wurde beim Flashing bereits hinzugefügt**
+
 ### 1. SSH to Raspberry Pi
 
 From your laptop:
@@ -10,7 +13,7 @@ ssh pi@saugbot.local
 # Password: 123456789
 ```
 
-### 2. Navigate to Home Directory and Clone Repository
+### 2. Clone Repository auf Raspberry Pi
 
 ```bash
 cd ~
@@ -18,54 +21,24 @@ git clone git@github.com:jonasoschroeter-netizen/saugbot.git
 cd saugbot
 ```
 
-**Note**: If the repository doesn't exist yet on GitHub, create it first on GitHub.com, then clone it.
-
-### 3. If Repository Already Exists Locally
-
-If you already have the code locally and need to connect to GitHub:
+### 3. Installiere Dependencies
 
 ```bash
-cd ~/saugbot  # or wherever your project is
-git init
-git remote add origin git@github.com:jonasoschroeter-netizen/saugbot.git
+pip3 install -r requirements.txt
 ```
 
-### 4. Setup SSH Key for GitHub (if not already done)
+### 4. Erstelle .env Datei (Optional)
 
 ```bash
-# Generate SSH key (if you don't have one)
-ssh-keygen -t ed25519 -C "your_email@example.com"
-
-# Display public key to add to GitHub
-cat ~/.ssh/id_ed25519.pub
+cp .env.example .env
+# Bearbeite .env falls nötig
 ```
 
-Then:
-1. Copy the output
-2. Go to https://github.com/settings/keys
-3. Click "New SSH key"
-4. Paste the key and save
+### 5. Teste SSH-Verbindung zu GitHub (Optional)
 
-Test connection:
 ```bash
 ssh -T git@github.com
-```
-
-### 5. Initial Commit and Push
-
-```bash
-# Add all files
-git add .
-
-# Create initial commit
-git commit -m "Initial commit: Saugbot project structure with motor control, sensors, and main control loop"
-
-# Push to GitHub (if main branch)
-git push -u origin main
-
-# OR if using master branch
-git branch -M main  # Rename to main if needed
-git push -u origin main
+# Sollte "Hi jonasoschroeter-netizen! You've successfully authenticated..." anzeigen
 ```
 
 ## Daily Workflow
