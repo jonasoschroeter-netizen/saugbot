@@ -2,6 +2,9 @@
 
 A DIY vacuum robot built on Raspberry Pi 4 with modular Python architecture.
 
+## 🧪 Auto-Update Test
+**Test-Update um 21:30 Uhr** - Wenn du das siehst, hat Auto-Update funktioniert! ✅
+
 ## Hardware Specifications
 
 - **Brain**: Raspberry Pi 4 (4GB)
