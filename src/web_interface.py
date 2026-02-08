@@ -78,6 +78,10 @@ def read_sensors():
     
     try:
         distances = sensors.get_all_distances()
+        
+        # Debug: Print distances to console
+        print(f"Sensor readings - Front: {distances['front']}, Left: {distances['left']}, Right: {distances['right']}")
+        
         return jsonify({
             'success': True,
             'distances': {
@@ -88,6 +92,9 @@ def read_sensors():
             'unit': 'cm'
         })
     except Exception as e:
+        print(f"Error reading sensors: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': str(e)
@@ -109,6 +116,43 @@ def get_config():
         return jsonify({
             'success': False,
             'error': str(e)
+        })
+
+@app.route('/api/sensors/debug')
+def sensor_debug():
+    """Debug endpoint to test sensor directly."""
+    if not SENSORS_AVAILABLE or sensors is None:
+        return jsonify({
+            'success': False,
+            'error': 'Sensors not available'
+        })
+    
+    try:
+        import RPi.GPIO as GPIO
+        from config import ULTRASONIC_LEFT_TRIGGER, ULTRASONIC_LEFT_ECHO
+        
+        # Test echo pin state
+        echo_state = GPIO.input(ULTRASONIC_LEFT_ECHO)
+        
+        # Get distance
+        left_distance = sensors.left.get_distance_cm()
+        
+        return jsonify({
+            'success': True,
+            'debug': {
+                'echo_pin_state': 'HIGH' if echo_state else 'LOW',
+                'trigger_pin': ULTRASONIC_LEFT_TRIGGER,
+                'echo_pin': ULTRASONIC_LEFT_ECHO,
+                'distance': left_distance,
+                'sensor_initialized': sensors is not None
+            }
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()
         })
 
 @app.route('/api/config/update', methods=['POST'])

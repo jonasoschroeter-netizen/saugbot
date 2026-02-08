@@ -47,38 +47,56 @@ class UltrasonicSensor:
         Returns:
             Distance in cm, or None if measurement failed/timeout
         """
-        # Send trigger pulse (10us minimum)
-        GPIO.output(self.trigger_pin, GPIO.HIGH)
-        time.sleep(0.00001)  # 10 microseconds
-        GPIO.output(self.trigger_pin, GPIO.LOW)
-        
-        # Wait for echo to go HIGH
-        start_time = time.time()
-        timeout = start_time + ULTRASONIC_TIMEOUT
-        
-        while GPIO.input(self.echo_pin) == GPIO.LOW:
-            if time.time() > timeout:
-                return None
+        try:
+            # Send trigger pulse (10us minimum)
+            GPIO.output(self.trigger_pin, GPIO.LOW)
+            time.sleep(0.00002)  # Ensure LOW state (20us)
+            GPIO.output(self.trigger_pin, GPIO.HIGH)
+            time.sleep(0.00001)  # 10 microseconds
+            GPIO.output(self.trigger_pin, GPIO.LOW)
+            
+            # Wait for echo to go HIGH (with timeout)
             start_time = time.time()
-        
-        # Wait for echo to go LOW
-        end_time = time.time()
-        timeout = end_time + ULTRASONIC_TIMEOUT
-        
-        while GPIO.input(self.echo_pin) == GPIO.HIGH:
-            if time.time() > timeout:
+            timeout = start_time + ULTRASONIC_TIMEOUT
+            echo_start = None
+            
+            # Wait for echo pin to go HIGH
+            while GPIO.input(self.echo_pin) == GPIO.LOW:
+                if time.time() > timeout:
+                    # print(f"{self.name}: Timeout waiting for echo HIGH")
+                    return None
+                time.sleep(0.00001)  # Small delay to prevent busy waiting
+            
+            echo_start = time.time()
+            
+            # Wait for echo pin to go LOW
+            timeout = echo_start + ULTRASONIC_TIMEOUT
+            echo_end = None
+            
+            while GPIO.input(self.echo_pin) == GPIO.HIGH:
+                if time.time() > timeout:
+                    # print(f"{self.name}: Timeout waiting for echo LOW")
+                    return None
+                echo_end = time.time()
+                time.sleep(0.00001)  # Small delay to prevent busy waiting
+            
+            if echo_start is None or echo_end is None:
                 return None
-            end_time = time.time()
-        
-        # Calculate distance
-        pulse_duration = end_time - start_time
-        distance_cm = (pulse_duration * SOUND_SPEED * 100) / 2
-        
-        # HC-SR04 range is 2-400cm, filter invalid readings
-        if distance_cm < 2 or distance_cm > 400:
+            
+            # Calculate distance
+            pulse_duration = echo_end - echo_start
+            distance_cm = (pulse_duration * SOUND_SPEED * 100) / 2
+            
+            # HC-SR04 range is 2-400cm, filter invalid readings
+            if distance_cm < 2 or distance_cm > 400:
+                # print(f"{self.name}: Distance out of range: {distance_cm:.1f}cm")
+                return None
+            
+            return round(distance_cm, 1)
+            
+        except Exception as e:
+            print(f"{self.name}: Error reading distance: {e}")
             return None
-        
-        return distance_cm
     
     def get_distance_m(self):
         """Measure distance in meters.
