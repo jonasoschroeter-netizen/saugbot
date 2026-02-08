@@ -104,12 +104,22 @@ def read_sensors():
 def get_config():
     """Get current configuration values."""
     try:
-        from config import COLLISION_DISTANCE_CM, MIN_DISTANCE_CM
+        from config import COLLISION_DISTANCE_CM, WARNING_DISTANCE_CM
         return jsonify({
             'success': True,
             'config': {
                 'collision_distance_cm': COLLISION_DISTANCE_CM,
-                'min_distance_cm': MIN_DISTANCE_CM
+                'warning_distance_cm': WARNING_DISTANCE_CM
+            }
+        })
+    except ImportError:
+        # Fallback für alte Config
+        from config import COLLISION_DISTANCE_CM
+        return jsonify({
+            'success': True,
+            'config': {
+                'collision_distance_cm': COLLISION_DISTANCE_CM,
+                'warning_distance_cm': 4  # Default
             }
         })
     except Exception as e:
@@ -161,7 +171,7 @@ def update_config():
     try:
         data = request.json
         collision_distance = data.get('collision_distance_cm')
-        min_distance = data.get('min_distance_cm')
+        warning_distance = data.get('warning_distance_cm')
         
         # Read current config.py
         config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.py')
@@ -176,12 +186,21 @@ def update_config():
                 f'COLLISION_DISTANCE_CM = {collision_distance}',
                 content
             )
-        if min_distance is not None:
-            content = re.sub(
-                r'MIN_DISTANCE_CM\s*=\s*\d+',
-                f'MIN_DISTANCE_CM = {min_distance}',
-                content
-            )
+        if warning_distance is not None:
+            # Update WARNING_DISTANCE_CM if it exists, otherwise add it
+            if re.search(r'WARNING_DISTANCE_CM', content):
+                content = re.sub(
+                    r'WARNING_DISTANCE_CM\s*=\s*\d+',
+                    f'WARNING_DISTANCE_CM = {warning_distance}',
+                    content
+                )
+            else:
+                # Add after COLLISION_DISTANCE_CM line
+                content = re.sub(
+                    r'(COLLISION_DISTANCE_CM\s*=\s*\d+)',
+                    f'\\1\nWARNING_DISTANCE_CM = {warning_distance}      # Distance for warning (orange) in cm',
+                    content
+                )
         
         # Write back
         with open(config_path, 'w') as f:

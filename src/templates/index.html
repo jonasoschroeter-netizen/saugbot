@@ -328,12 +328,12 @@
             </div>
             
             <div class="config-item">
-                <label>Kollisions-Distanz (cm):</label>
-                <input type="number" id="collisionDistance" min="5" max="100" step="1">
+                <label>Kollisions-Distanz (Rot) (cm):</label>
+                <input type="number" id="collisionDistance" min="1" max="10" step="1" title="Ab dieser Distanz wird Rot angezeigt und Kollisionsvermeidung aktiviert">
             </div>
             <div class="config-item">
-                <label>Minimale Distanz (cm):</label>
-                <input type="number" id="minDistance" min="5" max="50" step="1">
+                <label>Warn-Distanz (Orange) (cm):</label>
+                <input type="number" id="warningDistance" min="1" max="20" step="1" title="Ab dieser Distanz wird Orange (Warnung) angezeigt">
             </div>
             <button class="btn-primary" onclick="updateConfig()">Konfiguration speichern</button>
         </div>
@@ -437,11 +437,16 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        const threshold = data.config.collision_distance_cm;
+                        const collisionDist = data.config.collision_distance_cm || 2;
+                        const warningDist = data.config.warning_distance_cm || 4;
+                        
+                        // Alte Config-Kompatibilität
+                        const threshold = collisionDist;
                         document.getElementById('thresholdSlider').value = threshold;
                         document.getElementById('thresholdDisplay').textContent = threshold;
-                        document.getElementById('collisionDistance').value = threshold;
-                        document.getElementById('minDistance').value = data.config.min_distance_cm;
+                        
+                        document.getElementById('collisionDistance').value = collisionDist;
+                        document.getElementById('warningDistance').value = warningDist;
                     }
                 })
                 .catch(error => {
@@ -450,9 +455,8 @@
         }
         
         function updateConfig() {
-            const threshold = parseInt(document.getElementById('thresholdSlider').value);
-            const collisionDistance = parseInt(document.getElementById('collisionDistance').value) || threshold;
-            const minDistance = parseInt(document.getElementById('minDistance').value);
+            const collisionDistance = parseInt(document.getElementById('collisionDistance').value) || 2;
+            const warningDistance = parseInt(document.getElementById('warningDistance').value) || 4;
             
             fetch('/api/config/update', {
                 method: 'POST',
@@ -461,13 +465,17 @@
                 },
                 body: JSON.stringify({
                     collision_distance_cm: collisionDistance,
-                    min_distance_cm: minDistance
+                    warning_distance_cm: warningDistance
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Konfiguration erfolgreich gespeichert!\n\nSchwellenwert: ' + threshold + ' cm\n\nRoboter fährt nach rechts, wenn Links-Sensor < ' + threshold + ' cm misst.');
+                    alert('Konfiguration erfolgreich gespeichert!\n\n' +
+                          '🔴 Rot (Kollisionsgefahr): < ' + collisionDistance + ' cm\n' +
+                          '🟡 Orange (Warnung): < ' + warningDistance + ' cm\n' +
+                          '🟢 Grün (OK): >= ' + warningDistance + ' cm\n\n' +
+                          'Roboter fährt nach rechts, wenn Links-Sensor < ' + collisionDistance + ' cm misst.');
                 } else {
                     alert('Fehler: ' + data.error);
                 }

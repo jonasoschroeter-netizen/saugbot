@@ -72,8 +72,8 @@ class Saugbot:
         if distances['left'] is not None and distances['left'] < COLLISION_DISTANCE_CM:
             return True, 'left'
         
-        # Check right sensor
-        if distances['right'] is not None and distances['right'] < MIN_DISTANCE_CM:
+        # Check right sensor (use collision distance for consistency)
+        if distances['right'] is not None and distances['right'] < COLLISION_DISTANCE_CM:
             return True, 'right'
         
         return False, None

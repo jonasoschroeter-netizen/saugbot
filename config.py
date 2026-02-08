@@ -32,8 +32,8 @@ ULTRASONIC_TIMEOUT = 0.03    # Timeout in seconds (30ms for ~5m max range)
 SOUND_SPEED = 343            # Speed of sound in m/s at 20°C
 
 # Safety Thresholds
-MIN_DISTANCE_CM = 10         # Minimum safe distance in cm
-COLLISION_DISTANCE_CM = 15   # Distance to trigger collision avoidance
+WARNING_DISTANCE_CM = 4      # Distance for warning (orange) in cm
+COLLISION_DISTANCE_CM = 2    # Distance for collision danger (red) in cm - triggers avoidance
 
 # Level Shifter Configuration
 # Note: Level shifter is used for 3.3V <-> 5V conversion
