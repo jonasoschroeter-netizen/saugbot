@@ -401,7 +401,8 @@
         
         function updateDistance(sensor, distance) {
             const element = document.getElementById(sensor + 'Distance');
-            const threshold = parseInt(document.getElementById('thresholdSlider').value);
+            const collisionDist = parseInt(document.getElementById('collisionDistance').value) || 2;
+            const warningDist = parseInt(document.getElementById('warningDistance').value) || 4;
             const thresholdIndicator = document.getElementById('thresholdIndicator');
             const thresholdStatus = document.getElementById('thresholdStatus');
             
@@ -411,16 +412,22 @@
             } else {
                 element.innerHTML = distance.toFixed(1);
                 
-                // Visuelle Warnung basierend auf Schwellenwert
-                if (distance < threshold) {
+                // Farbcodierung: < 2cm = Rot, < 4cm = Orange, >= 4cm = Grün
+                if (distance < collisionDist) {
+                    // Rot: Kollisionsgefahr
                     thresholdIndicator.className = 'threshold-indicator danger';
-                    thresholdStatus.innerHTML = `🔴 HINDERNIS! Distanz (${distance.toFixed(1)}cm) < Schwellenwert (${threshold}cm)`;
-                } else if (distance < threshold + 5) {
+                    thresholdStatus.innerHTML = `🔴 KOLLISIONSGEFAHR! Distanz: ${distance.toFixed(1)}cm < ${collisionDist}cm`;
+                    element.style.color = '#f44336'; // Rot
+                } else if (distance < warningDist) {
+                    // Orange: Warnung
                     thresholdIndicator.className = 'threshold-indicator warning';
-                    thresholdStatus.innerHTML = `🟡 WARNUNG! Distanz (${distance.toFixed(1)}cm) nahe Schwellenwert (${threshold}cm)`;
+                    thresholdStatus.innerHTML = `🟡 WARNUNG! Distanz: ${distance.toFixed(1)}cm < ${warningDist}cm`;
+                    element.style.color = '#ff9800'; // Orange
                 } else {
+                    // Grün: OK
                     thresholdIndicator.className = 'threshold-indicator';
-                    thresholdStatus.innerHTML = `🟢 OK - Distanz: ${distance.toFixed(1)}cm | Schwellenwert: ${threshold}cm`;
+                    thresholdStatus.innerHTML = `🟢 OK - Distanz: ${distance.toFixed(1)}cm`;
+                    element.style.color = '#4CAF50'; // Grün
                 }
             }
         }
