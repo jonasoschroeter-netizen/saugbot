@@ -56,16 +56,22 @@ class Saugbot:
         Returns:
             Tuple (has_collision, direction) where direction is 'front', 'left', 'right', or None
         """
+        # Reload config to get latest threshold values
+        import config
+        importlib.reload(config)
+        from config import COLLISION_DISTANCE_CM, MIN_DISTANCE_CM
+        
         distances = self.sensors.get_all_distances()
         
         # Check front collision
         if distances['front'] is not None and distances['front'] < COLLISION_DISTANCE_CM:
             return True, 'front'
         
-        # Check side collisions (less critical, but still important)
-        if distances['left'] is not None and distances['left'] < MIN_DISTANCE_CM:
+        # Check left sensor (Links Vorne) - wichtigster Sensor
+        if distances['left'] is not None and distances['left'] < COLLISION_DISTANCE_CM:
             return True, 'left'
         
+        # Check right sensor
         if distances['right'] is not None and distances['right'] < MIN_DISTANCE_CM:
             return True, 'right'
         
@@ -101,7 +107,18 @@ class Saugbot:
             else:
                 self.motor.turn_right(50)
         elif direction == 'left':
-            self.motor.turn_right(50)
+            # Links vorne Sensor: Nach rechts fahren bis Gegenstand weg ist
+            print("Links vorne Hindernis - fahre nach rechts...")
+            while True:
+                self.motor.turn_right(50)
+                time.sleep(0.1)
+                distances = self.sensors.get_all_distances()
+                left_dist = distances['left'] if distances['left'] else 999
+                if left_dist > COLLISION_DISTANCE_CM:
+                    print(f"Gegenstand weg (Distanz: {left_dist}cm), fahre weiter...")
+                    break
+            self.motor.stop()
+            return  # Früh zurückkehren, da wir bereits ausgewichen sind
         elif direction == 'right':
             self.motor.turn_left(50)
         

@@ -91,12 +91,88 @@
             font-size: 24px;
         }
         
+        .main-sensor {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .main-sensor h3 {
+            color: white;
+        }
+        
+        .main-distance {
+            font-size: 72px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .threshold-indicator {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        
+        .threshold-indicator.warning {
+            background: rgba(255,193,7,0.3);
+        }
+        
+        .threshold-indicator.danger {
+            background: rgba(244,67,54,0.3);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
         .config-panel {
             background: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
         }
         
         .config-panel h2 {
@@ -198,18 +274,22 @@
         
         <div id="errorMessage" class="error-message" style="display: none;"></div>
         
+        <!-- Haupt-Sensor Anzeige (Links Vorne) -->
+        <div class="sensor-card main-sensor">
+            <h3>🔍 Links Vorne Sensor (Haupt-Sensor)</h3>
+            <div class="distance-display main-distance" id="leftDistance">
+                <span class="distance-error">--</span>
+            </div>
+            <div class="distance-unit">cm</div>
+            <div class="threshold-indicator" id="thresholdIndicator">
+                <span id="thresholdStatus">Schwellenwert: <span id="thresholdValue">15</span> cm</span>
+            </div>
+        </div>
+        
         <div class="sensors-grid">
             <div class="sensor-card">
                 <h3>Front Sensor</h3>
                 <div class="distance-display" id="frontDistance">
-                    <span class="distance-error">--</span>
-                </div>
-                <div class="distance-unit">cm</div>
-            </div>
-            
-            <div class="sensor-card">
-                <h3>Left Sensor</h3>
-                <div class="distance-display" id="leftDistance">
                     <span class="distance-error">--</span>
                 </div>
                 <div class="distance-unit">cm</div>
@@ -225,7 +305,20 @@
         </div>
         
         <div class="config-panel">
-            <h2>Konfiguration</h2>
+            <h2>⚙️ Konfiguration</h2>
+            
+            <div class="slider-container">
+                <div class="slider-label">
+                    <label><strong>Schwellenwert für Links Vorne Sensor (cm):</strong></label>
+                    <span id="thresholdDisplay">15</span>
+                </div>
+                <input type="range" id="thresholdSlider" class="slider" min="5" max="50" value="15" step="1" oninput="updateThresholdDisplay(this.value)">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-top: 5px;">
+                    <span>5 cm</span>
+                    <span>50 cm</span>
+                </div>
+            </div>
+            
             <div class="config-item">
                 <label>Kollisions-Distanz (cm):</label>
                 <input type="number" id="collisionDistance" min="5" max="100" step="1">
@@ -300,11 +393,35 @@
         
         function updateDistance(sensor, distance) {
             const element = document.getElementById(sensor + 'Distance');
+            const threshold = parseInt(document.getElementById('thresholdSlider').value);
+            const thresholdIndicator = document.getElementById('thresholdIndicator');
+            const thresholdStatus = document.getElementById('thresholdStatus');
+            
             if (distance === null || distance === undefined) {
                 element.innerHTML = '<span class="distance-error">--</span>';
+                thresholdIndicator.className = 'threshold-indicator';
             } else {
                 element.innerHTML = distance.toFixed(1);
+                
+                // Visuelle Warnung basierend auf Schwellenwert
+                if (distance < threshold) {
+                    thresholdIndicator.className = 'threshold-indicator danger';
+                    thresholdStatus.innerHTML = `🔴 HINDERNIS! Distanz (${distance.toFixed(1)}cm) < Schwellenwert (${threshold}cm)`;
+                } else if (distance < threshold + 5) {
+                    thresholdIndicator.className = 'threshold-indicator warning';
+                    thresholdStatus.innerHTML = `🟡 WARNUNG! Distanz (${distance.toFixed(1)}cm) nahe Schwellenwert (${threshold}cm)`;
+                } else {
+                    thresholdIndicator.className = 'threshold-indicator';
+                    thresholdStatus.innerHTML = `🟢 OK - Distanz: ${distance.toFixed(1)}cm | Schwellenwert: ${threshold}cm`;
+                }
             }
+        }
+        
+        function updateThresholdDisplay(value) {
+            document.getElementById('thresholdDisplay').textContent = value;
+            document.getElementById('collisionDistance').value = value;
+            // Sofort visuell aktualisieren wenn Sensor-Werte vorhanden
+            readSensors();
         }
         
         function loadConfig() {
@@ -312,7 +429,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        document.getElementById('collisionDistance').value = data.config.collision_distance_cm;
+                        const threshold = data.config.collision_distance_cm;
+                        document.getElementById('thresholdSlider').value = threshold;
+                        document.getElementById('thresholdDisplay').textContent = threshold;
+                        document.getElementById('collisionDistance').value = threshold;
                         document.getElementById('minDistance').value = data.config.min_distance_cm;
                     }
                 })
@@ -322,7 +442,8 @@
         }
         
         function updateConfig() {
-            const collisionDistance = parseInt(document.getElementById('collisionDistance').value);
+            const threshold = parseInt(document.getElementById('thresholdSlider').value);
+            const collisionDistance = parseInt(document.getElementById('collisionDistance').value) || threshold;
             const minDistance = parseInt(document.getElementById('minDistance').value);
             
             fetch('/api/config/update', {
@@ -338,7 +459,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Konfiguration erfolgreich gespeichert!');
+                    alert('Konfiguration erfolgreich gespeichert!\n\nSchwellenwert: ' + threshold + ' cm\n\nRoboter fährt nach rechts, wenn Links-Sensor < ' + threshold + ' cm misst.');
                 } else {
                     alert('Fehler: ' + data.error);
                 }
