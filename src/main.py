@@ -6,6 +6,7 @@ Coordinates motor control, sensors, and navigation logic.
 import time
 import signal
 import sys
+import importlib
 from motor_control import MotorController
 from ultrasonic_sensor import UltrasonicSensorArray
 from side_brush import SideBrush
@@ -83,6 +84,11 @@ class Saugbot:
         Args:
             direction: Direction of obstacle ('front', 'left', 'right')
         """
+        # Reload config to get latest threshold values
+        import config
+        importlib.reload(config)
+        from config import COLLISION_DISTANCE_CM, MIN_DISTANCE_CM
+        
         print(f"Collision detected from {direction}, avoiding...")
         
         # Stop immediately
@@ -109,7 +115,9 @@ class Saugbot:
         elif direction == 'left':
             # Links vorne Sensor: Nach rechts fahren bis Gegenstand weg ist
             print("Links vorne Hindernis - fahre nach rechts...")
-            while True:
+            max_attempts = 50  # Max 5 Sekunden (50 * 0.1s)
+            attempts = 0
+            while attempts < max_attempts:
                 self.motor.turn_right(50)
                 time.sleep(0.1)
                 distances = self.sensors.get_all_distances()
@@ -117,6 +125,7 @@ class Saugbot:
                 if left_dist > COLLISION_DISTANCE_CM:
                     print(f"Gegenstand weg (Distanz: {left_dist}cm), fahre weiter...")
                     break
+                attempts += 1
             self.motor.stop()
             return  # Früh zurückkehren, da wir bereits ausgewichen sind
         elif direction == 'right':
