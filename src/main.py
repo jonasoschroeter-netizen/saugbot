@@ -10,7 +10,11 @@ import importlib
 from motor_control import MotorController
 from ultrasonic_sensor import UltrasonicSensorArray
 from side_brush import SideBrush
-from config import COLLISION_DISTANCE_CM, MIN_DISTANCE_CM
+from config import COLLISION_DISTANCE_CM
+try:
+    from config import WARNING_DISTANCE_CM
+except ImportError:
+    WARNING_DISTANCE_CM = 4  # Default fallback
 
 
 class Saugbot:
