@@ -84,6 +84,29 @@ def restart_application():
     """Starte die Anwendung neu."""
     print("🔄 Starte Anwendung neu...")
     
+    # Prüfe ob Web-Interface Service installiert ist und starte neu
+    success, stdout, stderr = run_command(
+        "systemctl is-active saugbot-web.service"
+    )
+    
+    if success and "active" in stdout:
+        # Service läuft - neu starten
+        print("   Web-Interface Service wird neu gestartet...")
+        run_command("sudo systemctl restart saugbot-web.service")
+        print("   ✅ Web-Interface Service neu gestartet")
+    else:
+        # Service nicht aktiv - versuche Setup
+        print("   Web-Interface Service nicht aktiv - versuche Setup...")
+        setup_script = PROJECT_DIR / "setup_web_auto.sh"
+        if setup_script.exists():
+            success, stdout, stderr = run_command(
+                f"chmod +x {setup_script} && {setup_script}"
+            )
+            if success:
+                print("   ✅ Web-Interface Service Setup erfolgreich")
+            else:
+                print(f"   ⚠️  Setup-Fehler: {stderr}")
+    
     # Finde laufende Python-Prozesse (main.py oder web_interface.py)
     success, stdout, stderr = run_command(
         "pgrep -f 'python3.*(main|web_interface).py'"
@@ -99,8 +122,6 @@ def restart_application():
                 pass
         time.sleep(2)  # Warte bis Prozesse beendet sind
     
-    # Starte Anwendung neu (wird von systemd oder screen gemacht)
-    # Hier nur Logging
     print("✅ Anwendung sollte neu gestartet werden")
     return True
 
