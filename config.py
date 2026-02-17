@@ -12,16 +12,15 @@ MOTOR_RIGHT_IN1 = 25        # Right motor direction pin 1
 MOTOR_RIGHT_IN2 = 8         # Right motor direction pin 2
 
 # GPIO Pin Assignments for HC-SR04 Ultrasonic Sensors
-# Sensor 1 (Rechts): Trigger=GPIO 20 (Pin 38), Echo=GPIO 21
-# Sensor 2 (Links): Trigger=GPIO 16 (Pin 36), Echo=GPIO 13 (Pin 33)
-# Sensor 3 (Front): Trigger=GPIO 13 (Pin 33) - AKTUELL, sollte Pin 32 (GPIO 12) sein
-# WICHTIG: Pin 35 ist GND, kann nicht als Trigger verwendet werden!
-ULTRASONIC_FRONT_TRIGGER = 13   # Pin 33 - AKTUELL (sollte Pin 32 sein)
-ULTRASONIC_FRONT_ECHO = 6       # Pin 31
-ULTRASONIC_LEFT_TRIGGER = 16    # Pin 36 - MUSS sein (Pin 35 ist GND!)
-ULTRASONIC_LEFT_ECHO = 13       # Pin 33
-ULTRASONIC_RIGHT_TRIGGER = 20  # Pin 38
-ULTRASONIC_RIGHT_ECHO = 21     # Gefunden durch Test
+# Sensor 1 (Rechts): Trigger=GPIO 20, Echo=GPIO 21
+# Sensor 2 (Links): Trigger=GPIO 19 (MISO), Echo=? (muss noch gefunden werden)
+# Sensor 3 (Front): Trigger=GPIO 13 (PWM), Echo=? (muss noch gefunden werden)
+ULTRASONIC_FRONT_TRIGGER = 13   # GPIO 13 (PWM) - Sensor 3 Trigger
+ULTRASONIC_FRONT_ECHO = 6       # Pin 31 - VORLÄUFIG, muss getestet werden
+ULTRASONIC_LEFT_TRIGGER = 19    # GPIO 19 (MISO) - Sensor 2 Trigger
+ULTRASONIC_LEFT_ECHO = 13       # VORLÄUFIG - muss geändert werden (GPIO 13 ist jetzt Sensor 3 Trigger!)
+ULTRASONIC_RIGHT_TRIGGER = 20  # GPIO 20 - Sensor 1 Trigger
+ULTRASONIC_RIGHT_ECHO = 21     # GPIO 21 - Sensor 1 Echo
 
 # GPIO Pin Assignment for N20 Side Brush Relay
 SIDE_BRUSH_RELAY = 27
