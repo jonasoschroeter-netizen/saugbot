@@ -144,6 +144,41 @@ def restart_application():
     print("✅ Anwendung sollte neu gestartet werden")
     return True
 
+def ensure_web_interface_running():
+    """Stelle sicher, dass Web-Interface läuft."""
+    # Prüfe ob Web-Interface läuft
+    success, stdout, stderr = run_command(
+        "pgrep -f 'python3.*web_interface.py'"
+    )
+    
+    if success and stdout.strip():
+        # Läuft bereits
+        return True
+    
+    # Starte Web-Interface
+    print("🌐 Web-Interface läuft nicht - starte jetzt...")
+    start_script = PROJECT_DIR / "start_web_background.sh"
+    if start_script.exists():
+        success, stdout, stderr = run_command(
+            f"chmod +x {start_script} && bash {start_script}"
+        )
+        if success:
+            print("   ✅ Web-Interface gestartet")
+            return True
+        else:
+            print(f"   ⚠️  Start-Fehler: {stderr}")
+    else:
+        # Fallback: Direkt starten
+        run_command(
+            f"cd {PROJECT_DIR} && export PYTHONPATH={PROJECT_DIR} && "
+            f"mkdir -p logs && "
+            f"nohup python3 src/web_interface.py > logs/web_interface.log 2>&1 &"
+        )
+        print("   ✅ Web-Interface gestartet (direkt)")
+        return True
+    
+    return False
+
 def main():
     """Haupt-Loop für automatische Updates."""
     import sys
@@ -159,7 +194,11 @@ def main():
     print(f"⏱️  Prüfe alle {CHECK_INTERVAL} Sekunden auf Updates...")
     print("   (Drücke Ctrl+C zum Beenden)\n")
     
+    # Stelle sicher, dass Web-Interface beim Start läuft
+    ensure_web_interface_running()
+    
     last_update_check = 0
+    web_check_counter = 0
     
     try:
         while True:
@@ -172,6 +211,12 @@ def main():
                     print(f"\n✅ Update abgeschlossen. Nächste Prüfung in {CHECK_INTERVAL} Sekunden...\n")
                 else:
                     print(f"\n⚠️  Update fehlgeschlagen. Nächste Prüfung in {CHECK_INTERVAL} Sekunden...\n")
+            
+            # Prüfe alle 60 Sekunden ob Web-Interface läuft
+            web_check_counter += 1
+            if web_check_counter >= (60 // CHECK_INTERVAL):  # Alle 60 Sekunden
+                web_check_counter = 0
+                ensure_web_interface_running()
             
             # Warte bis nächste Prüfung
             time.sleep(CHECK_INTERVAL)
