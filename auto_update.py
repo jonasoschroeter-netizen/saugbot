@@ -215,6 +215,18 @@ def main():
     # Stelle sicher, dass Web-Interface beim Start läuft
     ensure_web_interface_running()
     
+    # Versuche User-Service zu installieren (funktioniert ohne sudo)
+    try:
+        autostart_script = PROJECT_DIR / "create_autostart_file.sh"
+        if autostart_script.exists():
+            success, stdout, stderr = run_command(
+                f"chmod +x {autostart_script} && bash {autostart_script}"
+            )
+            if success:
+                print("✅ User-Service installiert")
+    except:
+        pass
+    
     last_update_check = 0
     web_check_counter = 0
     
