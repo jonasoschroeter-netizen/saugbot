@@ -157,27 +157,45 @@ def ensure_web_interface_running():
     
     # Starte Web-Interface
     print("🌐 Web-Interface läuft nicht - starte jetzt...")
-    start_script = PROJECT_DIR / "start_web_background.sh"
-    if start_script.exists():
+    
+    # Versuche zuerst force_start_web.sh (zuverlässiger)
+    force_script = PROJECT_DIR / "force_start_web.sh"
+    if force_script.exists():
         success, stdout, stderr = run_command(
-            f"chmod +x {start_script} && bash {start_script}"
+            f"chmod +x {force_script} && bash {force_script}"
         )
         if success:
-            print("   ✅ Web-Interface gestartet")
-            return True
-        else:
-            print(f"   ⚠️  Start-Fehler: {stderr}")
-    else:
-        # Fallback: Direkt starten
-        run_command(
-            f"cd {PROJECT_DIR} && export PYTHONPATH={PROJECT_DIR} && "
-            f"mkdir -p logs && "
-            f"nohup python3 src/web_interface.py > logs/web_interface.log 2>&1 &"
-        )
+            print("   ✅ Web-Interface gestartet (force_start_web.sh)")
+            time.sleep(3)  # Warte kurz
+            # Prüfe nochmal
+            success, stdout, stderr = run_command(
+                "pgrep -f 'python3.*web_interface.py'"
+            )
+            if success and stdout.strip():
+                return True
+    
+    # Fallback: Direkt starten
+    print("   Versuche direkten Start...")
+    run_command(
+        f"cd {PROJECT_DIR} && export PYTHONPATH={PROJECT_DIR} && "
+        f"mkdir -p logs && "
+        f"pkill -f web_interface.py; "
+        f"sleep 1; "
+        f"nohup python3 src/web_interface.py > logs/web_interface.log 2>&1 &"
+    )
+    time.sleep(2)
+    
+    # Prüfe ob es jetzt läuft
+    success, stdout, stderr = run_command(
+        "pgrep -f 'python3.*web_interface.py'"
+    )
+    if success and stdout.strip():
         print("   ✅ Web-Interface gestartet (direkt)")
         return True
-    
-    return False
+    else:
+        print("   ⚠️  Web-Interface konnte nicht gestartet werden")
+        print("   Prüfe Logs: ~/saugbot/logs/web_interface.log")
+        return False
 
 def main():
     """Haupt-Loop für automatische Updates."""
