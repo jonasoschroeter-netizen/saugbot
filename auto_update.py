@@ -227,6 +227,25 @@ def main():
     except:
         pass
     
+    # Versuche rc.local Boot-Script zu installieren
+    try:
+        rc_local_script = PROJECT_DIR / "install_rc_local.sh"
+        boot_script = PROJECT_DIR / "boot_start_web.sh"
+        if rc_local_script.exists() and boot_script.exists():
+            # Mache Scripts ausführbar
+            run_command(f"chmod +x {boot_script}")
+            # Versuche rc.local zu installieren (benötigt sudo, aber versuchen wir trotzdem)
+            success, stdout, stderr = run_command(
+                f"chmod +x {rc_local_script} && bash {rc_local_script}"
+            )
+            if success:
+                print("✅ Boot-Script in rc.local installiert")
+            else:
+                # Falls sudo nicht funktioniert, versuche es ohne
+                print(f"⚠️  rc.local Installation fehlgeschlagen (benötigt sudo): {stderr}")
+    except Exception as e:
+        print(f"⚠️  Boot-Script Installation Fehler: {e}")
+    
     last_update_check = 0
     web_check_counter = 0
     
