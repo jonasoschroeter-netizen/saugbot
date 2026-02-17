@@ -31,90 +31,113 @@ def check_pin(pin_number):
         GPIO.cleanup()
         return False, str(e)
 
-def main():
-    print("=" * 70)
-    print("  PIN 35 PRÜFUNG")
-    print("=" * 70)
-    print()
-    
-    # Standard Pin-Mapping (kann je nach Pi-Modell variieren)
-    print("Standard Pin-Mapping (Raspberry Pi 4/3):")
-    print("-" * 70)
-    print("Pin 35 = GND (Masse)")
-    print()
-    
-    # Prüfe mögliche GPIO-Pins die Pin 35 sein könnten
-    # Basierend auf verschiedenen Pi-Modellen
-    possible_pins = {
-        35: "Standard: GND",
-        16: "GPIO 16 (könnte Pin 36 sein)",
-        26: "GPIO 26 (könnte Pin 37 sein)",
-        20: "GPIO 20 (könnte Pin 38 sein)",
+def find_physical_pin_gpio(physical_pin):
+    """Findet welcher GPIO-Pin einem physischen Pin entspricht."""
+    # Standard Raspberry Pi Pinout (40-Pin Header)
+    # Von hinten (Pin 40) nach vorne (Pin 1)
+    pin_mapping = {
+        40: None,  # GND
+        39: None,  # GND
+        38: 20,    # GPIO 20
+        37: 26,    # GPIO 26
+        36: 16,    # GPIO 16
+        35: None,  # GND (Standard)
+        34: None,  # GND
+        33: 13,    # GPIO 13
+        32: 12,    # GPIO 12
+        31: 6,     # GPIO 6
+        30: None,  # GND
+        # ... weitere Pins
     }
     
-    print("Prüfe Pin 35...")
-    print("-" * 70)
-    
-    # Versuche Pin 35 als GPIO zu verwenden
-    # Wenn es GND ist, sollte das fehlschlagen
+    return pin_mapping.get(physical_pin, "UNBEKANNT")
+
+def test_gpio_as_trigger(gpio_pin):
+    """Testet ob ein GPIO-Pin als Trigger verwendet werden kann."""
     try:
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         
-        # Versuche Pin 35 als GPIO zu konfigurieren
-        # Wenn es GND ist, sollte das problematisch sein
-        GPIO.setup(35, GPIO.IN)
-        state = GPIO.input(35)
-        
-        print(f"✅ Pin 35 kann als GPIO verwendet werden!")
-        print(f"   Zustand: {'HIGH' if state else 'LOW'}")
-        print(f"   → Pin 35 ist GPIO 35 (oder ein anderer GPIO-Pin)")
-        
-        GPIO.cleanup()
-        
-        # Teste ob es als Output funktioniert
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        GPIO.setup(35, GPIO.OUT)
-        GPIO.output(35, GPIO.HIGH)
+        GPIO.setup(gpio_pin, GPIO.OUT)
+        GPIO.output(gpio_pin, GPIO.LOW)
         time.sleep(0.001)
-        GPIO.output(35, GPIO.LOW)
+        GPIO.output(gpio_pin, GPIO.HIGH)
+        time.sleep(0.001)
+        GPIO.output(gpio_pin, GPIO.LOW)
+        
         GPIO.cleanup()
-        
-        print(f"   → Kann als Output verwendet werden (Trigger möglich)")
-        print()
-        print("=" * 70)
-        print("  ERGEBNIS:")
-        print("=" * 70)
-        print()
-        print("✅ Pin 35 ist ein GPIO-Pin!")
-        print("   → Kann als Trigger verwendet werden")
-        print()
-        print("⚠️  HINWEIS: Das ist ungewöhnlich!")
-        print("   Standard Raspberry Pi Pinout zeigt Pin 35 als GND")
-        print("   Vielleicht verwendest du:")
-        print("   - Ein anderes Pi-Modell")
-        print("   - Eine andere Pin-Nummerierung")
-        print("   - Ein HAT/Shield das Pins umbelegt")
-        
-    except Exception as e:
-        print(f"❌ Pin 35 kann nicht als GPIO verwendet werden")
-        print(f"   Fehler: {e}")
-        print(f"   → Pin 35 ist wahrscheinlich GND (wie erwartet)")
-        print()
-        print("=" * 70)
-        print("  LÖSUNG:")
-        print("=" * 70)
-        print()
-        print("Falls Pin 35 wirklich GND ist:")
-        print("  → Sensor 2 Trigger muss Pin 36 (GPIO 16) sein")
-        print()
-        print("Falls Pin 35 wirklich ein GPIO-Pin ist:")
-        print("  → Teile mir mit welcher GPIO-Pin das ist")
-        print("  → Dann aktualisiere ich die config.py")
+        return True
+    except:
+        GPIO.cleanup()
+        return False
+
+def main():
+    print("=" * 70)
+    print("  PIN 35 GPIO-IDENTIFIKATION")
+    print("=" * 70)
+    print()
+    
+    print("Standard Pin-Mapping sagt: Pin 35 = GND")
+    print("Du sagst: Pin 35 ist kein GND")
+    print()
+    print("Prüfe welche GPIO-Pins in der Nähe sind...")
+    print("-" * 70)
+    print()
+    
+    # Teste alle möglichen GPIO-Pins die Pin 35 sein könnten
+    possible_gpios = [16, 26, 20, 13, 12, 6, 35]  # Inkl. GPIO 35 falls vorhanden
+    
+    print("Teste mögliche GPIO-Pins:")
+    print()
+    
+    working_pins = []
+    
+    for gpio in possible_gpios:
+        if test_gpio_as_trigger(gpio):
+            # Prüfe Zustand
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setwarnings(False)
+            GPIO.setup(gpio, GPIO.IN)
+            state = GPIO.input(gpio)
+            GPIO.cleanup()
+            
+            working_pins.append({
+                'gpio': gpio,
+                'state': 'HIGH' if state else 'LOW'
+            })
+            print(f"  ✅ GPIO {gpio}: Kann als Trigger verwendet werden (Zustand: {'HIGH' if state else 'LOW'})")
     
     print()
     print("=" * 70)
+    print("  ERGEBNIS:")
+    print("=" * 70)
+    print()
+    
+    if working_pins:
+        print("Funktionierende GPIO-Pins:")
+        for pin_info in working_pins:
+            print(f"  - GPIO {pin_info['gpio']} (Zustand: {pin_info['state']})")
+        print()
+        print("Um herauszufinden welcher GPIO-Pin Pin 35 ist:")
+        print("  1. Prüfe physisch welche GPIO-Nummer auf dem Pin steht")
+        print("  2. Oder teste jeden GPIO-Pin einzeln als Trigger")
+        print()
+        print("Falls Pin 35 wirklich GPIO 16 ist:")
+        print("  → Dann ist Pin 36 vielleicht GPIO 26 oder ein anderer Pin")
+    else:
+        print("❌ Keine GPIO-Pins gefunden die als Trigger funktionieren")
+    
+    print()
+    print("=" * 70)
+    print("  NÄCHSTE SCHRITTE:")
+    print("=" * 70)
+    print()
+    print("Teile mir mit:")
+    print("  - Welcher GPIO-Pin ist Pin 35 wirklich?")
+    print("  - Oder teste: python3 src/monitor_sensor.py [GPIO_PIN] [ECHO_PIN]")
+    print()
+    print("Dann aktualisiere ich die config.py entsprechend!")
+    print()
 
 if __name__ == "__main__":
     import time
