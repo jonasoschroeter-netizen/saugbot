@@ -84,32 +84,51 @@ def restart_application():
     """Starte die Anwendung neu."""
     print("🔄 Starte Anwendung neu...")
     
-    # Prüfe ob Web-Interface Service installiert ist und starte neu
-    success, stdout, stderr = run_command(
-        "systemctl is-active saugbot-web.service"
-    )
+    # Prüfe ob Web-Interface läuft (als Prozess oder Service)
+    web_running = False
     
+    # Prüfe Service
+    success, stdout, stderr = run_command(
+        "systemctl is-active saugbot-web.service 2>/dev/null"
+    )
     if success and "active" in stdout:
-        # Service läuft - neu starten
-        print("   Web-Interface Service wird neu gestartet...")
+        web_running = True
+        print("   Web-Interface Service läuft - neu starten...")
         run_command("sudo systemctl restart saugbot-web.service")
         print("   ✅ Web-Interface Service neu gestartet")
     else:
-        # Service nicht aktiv - versuche Setup
-        print("   Web-Interface Service nicht aktiv - versuche Setup...")
-        setup_script = PROJECT_DIR / "setup_web_auto.sh"
-        if setup_script.exists():
+        # Prüfe ob als Prozess läuft
+        success, stdout, stderr = run_command(
+            "pgrep -f 'python3.*web_interface.py'"
+        )
+        if success and stdout.strip():
+            web_running = True
+            print("   Web-Interface läuft als Prozess")
+    
+    # Starte Web-Interface falls nicht läuft
+    if not web_running:
+        print("   Web-Interface läuft nicht - starte im Hintergrund...")
+        start_script = PROJECT_DIR / "start_web_background.sh"
+        if start_script.exists():
             success, stdout, stderr = run_command(
-                f"chmod +x {setup_script} && {setup_script}"
+                f"chmod +x {start_script} && bash {start_script}"
             )
             if success:
-                print("   ✅ Web-Interface Service Setup erfolgreich")
+                print("   ✅ Web-Interface im Hintergrund gestartet")
             else:
-                print(f"   ⚠️  Setup-Fehler: {stderr}")
+                print(f"   ⚠️  Start-Fehler: {stderr}")
+        else:
+            # Fallback: Direkt starten
+            print("   Starte Web-Interface direkt...")
+            run_command(
+                f"cd {PROJECT_DIR} && export PYTHONPATH={PROJECT_DIR} && "
+                f"nohup python3 src/web_interface.py > logs/web_interface.log 2>&1 &"
+            )
+            print("   ✅ Web-Interface gestartet")
     
-    # Finde laufende Python-Prozesse (main.py oder web_interface.py)
+    # Finde laufende Python-Prozesse (main.py) - Web-Interface nicht beenden
     success, stdout, stderr = run_command(
-        "pgrep -f 'python3.*(main|web_interface).py'"
+        "pgrep -f 'python3.*main.py'"
     )
     
     if success and stdout.strip():
