@@ -102,8 +102,22 @@ def main():
     found_sensors = []
     problem_pins = []
     
+    # Berechne Gesamtanzahl der Tests
+    total_combinations = 0
+    for trigger in ALL_GPIO_PINS:
+        for echo in ALL_GPIO_PINS:
+            if trigger == echo:
+                continue
+            if trigger == KNOWN_TRIGGER and echo == KNOWN_ECHO:
+                continue
+            total_combinations += 1
+    
     print("Teste Pin-Kombinationen...")
+    print(f"Gesamt: {total_combinations} Kombinationen")
     print()
+    
+    start_time = time.time()
+    tested = 0
     
     for trigger in ALL_GPIO_PINS:
         for echo in ALL_GPIO_PINS:
@@ -113,6 +127,22 @@ def main():
             # Überspringe bekannten Sensor
             if trigger == KNOWN_TRIGGER and echo == KNOWN_ECHO:
                 continue
+            
+            tested += 1
+            progress = (tested / total_combinations) * 100
+            elapsed = time.time() - start_time
+            if tested > 0:
+                avg_time = elapsed / tested
+                remaining = (total_combinations - tested) * avg_time
+            else:
+                remaining = 0
+            
+            # Fortschrittsanzeige
+            bar_length = 50
+            filled = int(bar_length * progress / 100)
+            bar = "█" * filled + "░" * (bar_length - filled)
+            
+            print(f"\r[{bar}] {progress:5.1f}% | {tested}/{total_combinations} | ⏱️  ~{int(remaining)}s verbleibend", end="", flush=True)
             
             # Teste mehrmals
             success_count = 0
@@ -128,7 +158,7 @@ def main():
                     'echo': echo,
                     'success_rate': success_count
                 })
-                print(f"✅ Sensor gefunden: Trigger=GPIO {trigger}, Echo=GPIO {echo} ({success_count}/3 erfolgreich)")
+                print(f"\n✅ Sensor gefunden: Trigger=GPIO {trigger}, Echo=GPIO {echo} ({success_count}/3 erfolgreich)")
             elif success_count == 1:
                 # Teilweise funktionierend - könnte ein Problem sein
                 problem_pins.append({
@@ -136,6 +166,10 @@ def main():
                     'echo': echo,
                     'issue': 'Unzuverlässig (nur 1/3 erfolgreich)'
                 })
+    
+    # Finale Fortschrittsanzeige
+    print(f"\r[{'█' * bar_length}] 100.0% | {total_combinations}/{total_combinations} | ✅ Fertig!        ")
+    print()
     
     GPIO.cleanup()
     
