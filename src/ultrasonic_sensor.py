@@ -106,6 +106,9 @@ class UltrasonicSensorArray:
     
     def __init__(self):
         """Initialize all three sensors."""
+        GPIO.setmode(GPIO.BCM)
+        GPIO.cleanup()  # Reset - behebt "auf einmal geht nicht mehr"
+        time.sleep(0.3)
         self.front = UltrasonicSensor(
             ULTRASONIC_FRONT_TRIGGER,
             ULTRASONIC_FRONT_ECHO,
@@ -128,11 +131,12 @@ class UltrasonicSensorArray:
         Returns:
             Dictionary with 'front', 'left', 'right' distances in cm
         """
-        # 70ms Pause zwischen Sensoren (HC-SR04 braucht min. 60ms)
+        # 120ms Pause zwischen Sensoren - verhindert Ultraschall-Interferenz
+        # (HC-SR04 min. 60ms, bei 3 Sensoren brauchen wir mehr Abstand)
         front = self.front.get_distance_cm()
-        time.sleep(0.07)
+        time.sleep(0.12)
         left = self.left.get_distance_cm()
-        time.sleep(0.07)
+        time.sleep(0.12)
         right = self.right.get_distance_cm()
         return {'front': front, 'left': left, 'right': right}
     
