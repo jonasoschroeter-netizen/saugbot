@@ -15,9 +15,9 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-# Sensor: 1=Rechts(20/21), 2=Links(16/26), 3=Front(5/3)
+# Sensor: 1=Rechts(20/21), 2=Links(16/26), 3=Front(3/4) Trig=27, Echo=28
 SENSOR = int(sys.argv[1]) if len(sys.argv) > 1 else 1
-PINS = {1: (20, 21), 2: (16, 26), 3: (5, 3)}
+PINS = {1: (20, 21), 2: (16, 26), 3: (3, 4)}
 TRIG, ECHO = PINS.get(SENSOR, (20, 21))
 
 GPIO.setup(TRIG, GPIO.OUT)
