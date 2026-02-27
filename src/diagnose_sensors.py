@@ -15,11 +15,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ultrasonic_sensor import UltrasonicSensor
 
 # Alle 3 Sensoren - testen BEIDE Varianten (normal + vertauscht)
-# Mitte: Pin 27=GPIO0, Pin 28=GPIO1 (Sonderpins - können Probleme machen!)
+# Mitte: Pin 29=GPIO5, Pin 31=GPIO6
 SENSORS = [
     (20, 21, 'Sensor 1 (Rechts)'),
     (16, 26, 'Sensor 2 (Links)'),
-    (0, 1, 'Sensor 3 (Mitte)'),   # GPIO 0/1 = Pin 27/28
+    (5, 6, 'Sensor 3 (Mitte)'),   # GPIO 5/6 = Pin 29/31
 ]
 
 
@@ -149,8 +149,8 @@ if __name__ == "__main__":
                 content = content.replace('ULTRASONIC_SENSOR2_TRIGGER = 16', f'ULTRASONIC_SENSOR2_TRIGGER = {trig}')
                 content = content.replace('ULTRASONIC_SENSOR2_ECHO = 26', f'ULTRASONIC_SENSOR2_ECHO = {echo}')
             elif "Front" in name or "Mitte" in name:
-                content = content.replace('ULTRASONIC_SENSOR3_TRIGGER = 0', f'ULTRASONIC_SENSOR3_TRIGGER = {trig}')
-                content = content.replace('ULTRASONIC_SENSOR3_ECHO = 1', f'ULTRASONIC_SENSOR3_ECHO = {echo}')
+                content = content.replace('ULTRASONIC_SENSOR3_TRIGGER = 5', f'ULTRASONIC_SENSOR3_TRIGGER = {trig}')
+                content = content.replace('ULTRASONIC_SENSOR3_ECHO = 6', f'ULTRASONIC_SENSOR3_ECHO = {echo}')
         with open(config_path, 'w') as f:
             f.write(content)
         print("\nconfig.py wurde aktualisiert!")
