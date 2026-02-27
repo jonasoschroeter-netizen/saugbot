@@ -1,80 +1,77 @@
-# SSH-Verbindung Problem lösen
+# 🔧 SSH-Verbindung funktioniert nicht
 
-## Problem:
-SSH ist aktiviert, aber Verbindung schlägt fehl (Connection timed out).
+## Diagnose-Ergebnis
 
-## Prüfungen am Pi (im Terminal):
+- **Ping:** ✅ Pi ist erreichbar (192.168.37.207)
+- **SSH-Port:** ✅ Verbindung wird hergestellt
+- **Authentifizierung:** ❌ Permission denied (publickey,password)
 
-### 1. Prüfe ob SSH auf Port 22 hört:
+## Ursache
 
-```bash
-sudo netstat -tlnp | grep :22
-```
+SSH lehnt die Anmeldung ab, weil:
+1. **Kein SSH-Key** auf dem Pi hinterlegt ist, ODER
+2. **Passwort** wird verlangt, aber automatische Skripte können nicht eingeben
 
-Oder:
-```bash
-sudo ss -tlnp | grep :22
-```
+## Lösung 1: SSH-Key einrichten (empfohlen)
 
-Sollte zeigen: `0.0.0.0:22` oder `:::22`
+### Auf deinem Windows-PC (PowerShell):
 
-### 2. Prüfe SSH-Konfiguration:
-
-```bash
-sudo nano /etc/ssh/sshd_config
-```
-
-Suche nach:
-- `ListenAddress` - sollte auskommentiert sein oder `0.0.0.0`
-- `Port 22` - sollte aktiv sein
-- `PermitRootLogin` - kann `yes` oder `no` sein (nicht relevant für pi user)
-
-Drücke `Ctrl+X`, dann `Y`, dann `Enter` zum Speichern.
-
-### 3. SSH-Service neu starten:
-
-```bash
-sudo systemctl restart ssh
-sudo systemctl status ssh
-```
-
-### 4. Firewall prüfen:
-
-```bash
-sudo ufw status
-```
-
-Falls aktiv, Port 22 öffnen:
-```bash
-sudo ufw allow 22
-```
-
-### 5. IP-Adresse prüfen:
-
-```bash
-hostname -I
-```
-
-Sollte `192.168.0.5` zeigen.
-
-### 6. Ping-Test vom Laptop:
-
-Vom Laptop aus (in PowerShell):
 ```powershell
-ping 192.168.0.5
+# Prüfen ob du schon einen Key hast
+dir $env:USERPROFILE\.ssh\
+
+# Falls KEIN id_ed25519.pub oder id_rsa.pub existiert, neuen Key erstellen:
+ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\id_ed25519 -N '""'
+
+# Public Key anzeigen (diesen kopieren!)
+cat $env:USERPROFILE\.ssh\id_ed25519.pub
 ```
 
-Sollte Antworten geben.
-
-## Alternative: Direkt am Pi arbeiten
-
-Falls SSH-Verbindung nicht funktioniert, kannst du alles direkt am Pi machen:
+### Auf dem Raspberry Pi (per Monitor/Tastatur oder bestehende SSH-Session):
 
 ```bash
-cd ~
-wget https://raw.githubusercontent.com/jonasoschroeter-netizen/saugbot/main/setup_raspi.sh
-chmod +x setup_raspi.sh
-bash setup_raspi.sh
+# Ordner erstellen falls nötig
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+# Key hinzufügen (ersetze INHALT mit dem Output von id_ed25519.pub)
+echo "ssh-ed25519 AAAA... dein-key" >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
 ```
 
-Das Setup-Script funktioniert auch direkt am Pi!
+### Oder: Key kopieren mit ssh-copy-id (wenn du dich mit Passwort verbinden kannst):
+
+```powershell
+# Einmalig mit Passwort verbinden - Key wird automatisch kopiert
+ssh-copy-id pi@192.168.37.207
+# Passwort eingeben: 123456789
+```
+
+## Lösung 2: Passwort-Auth prüfen
+
+Falls du dich manuell mit Passwort verbinden kannst:
+
+```bash
+ssh pi@192.168.37.207
+# Passwort: 123456789
+```
+
+Wenn das funktioniert, liegt das Problem nur an der **automatischen** Verbindung (Skripte können kein Passwort eingeben).
+
+## Lösung 3: SSH-Key vom Pi auf deinen PC
+
+Falls du Zugriff auf den Pi hast (Monitor/Tastatur):
+
+```bash
+# Auf dem Pi - zeige den authorized_keys Inhalt
+cat ~/.ssh/authorized_keys
+
+# Prüfe ob SSH Passwort-Auth erlaubt
+sudo grep PasswordAuthentication /etc/ssh/sshd_config
+```
+
+## Warum Cursor/AI nicht verbinden kann
+
+Wenn du `ssh pi@saugbot.local` **manuell** in einer Konsole ausführst und das Passwort eingibst, funktioniert es. 
+
+Die automatischen Befehle von Cursor können aber **kein Passwort eingeben** – deshalb schlägt die Verbindung fehl. Mit einem eingerichteten SSH-Key wäre keine Passworteingabe nötig.

@@ -4,7 +4,7 @@ Prüft welche Services auf dem Raspberry Pi erreichbar sind
 
 import socket
 
-RASPBERRY_PI_IP = "192.168.0.5"
+RASPBERRY_PI_IP = "192.168.37.207"  # Oder: saugbot.local
 
 # Bekannte Ports
 PORTS = {

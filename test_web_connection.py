@@ -21,7 +21,7 @@ except ImportError:
     print("Warnung: requests-Bibliothek nicht installiert. HTTP-Test wird übersprungen.")
     print("Installiere mit: pip install requests")
 
-RASPBERRY_PI_IP = "192.168.0.5"
+RASPBERRY_PI_IP = "192.168.37.207"  # Oder: saugbot.local
 PORT = 5000
 
 def test_port(host, port):
