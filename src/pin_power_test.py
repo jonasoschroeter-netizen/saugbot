@@ -23,14 +23,14 @@ GPIO.setwarnings(False)
 TRIGGER_PINS = [
     (20, "Sensor 1 (Rechts) - Pin 38"),
     (16, "Sensor 2 (Links) - Pin 36"),
-    (5, "Sensor 3 (Front) - Pin 29"),
+    (3, "Sensor 3 (Mitte) - Pin 27"),
 ]
 
 # Alle Echo-Pins (Eingang vom Sensor - Pi liest nur, sendet nicht)
 ECHO_PINS = [
     (21, "Sensor 1 (Rechts) - Pin 40"),
     (26, "Sensor 2 (Links) - Pin 37"),
-    (6, "Sensor 3 (Front) - Pin 31"),
+    (4, "Sensor 3 (Mitte) - Pin 28"),
 ]
 
 print("=" * 60)
@@ -52,7 +52,7 @@ print()
 print("=" * 60)
 print("Multimeter prüfen:")
 print("  - GND (schwarz): Pin 39")
-print("  - Messen (rot):  Pin 38, 36, 29 nacheinander")
+print("  - Messen (rot):  Pin 38, 36, 27 nacheinander")
 print("  - Erwartung:     ~3.3V an jedem")
 print()
 print("Drücke Ctrl+C zum Beenden")
