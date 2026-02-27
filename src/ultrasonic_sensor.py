@@ -148,9 +148,10 @@ if __name__ == "__main__":
         print("Testing ultrasonic sensors...")
         for i in range(10):
             distances = sensors.get_all_distances()
-            print(f"Front: {distances['front']:.1f}cm | "
-                  f"Left: {distances['left']:.1f}cm | "
-                  f"Right: {distances['right']:.1f}cm")
+            f = distances['front'] if distances['front'] is not None else '---'
+            l = distances['left'] if distances['left'] is not None else '---'
+            r = distances['right'] if distances['right'] is not None else '---'
+            print(f"Front: {f} | Left: {l} | Right: {r}")
             time.sleep(1)
     
     except KeyboardInterrupt:
