@@ -24,7 +24,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/pi/saugbot
-Environment="PYTHONPATH=/home/pi/saugbot"
+Environment="PYTHONPATH=/home/pi/saugbot:/home/pi/saugbot/src"
 ExecStart=/usr/bin/python3 /home/pi/saugbot/src/web_interface.py
 Restart=always
 RestartSec=10
