@@ -3,24 +3,32 @@ Saugbot Configuration File
 Contains all GPIO pin assignments and hardware configuration.
 """
 
-# GPIO Pin Assignments for L298N Motor Driver
-MOTOR_LEFT_ENABLE = 18      # PWM pin for left motor speed
-MOTOR_LEFT_IN1 = 23         # Left motor direction pin 1
-MOTOR_LEFT_IN2 = 24         # Left motor direction pin 2
-MOTOR_RIGHT_ENABLE = 19     # PWM pin for right motor speed
-MOTOR_RIGHT_IN1 = 25        # Right motor direction pin 1
-MOTOR_RIGHT_IN2 = 8         # Right motor direction pin 2
+# GPIO Pin Assignments for Motor Controllers (RPWM/LPWM - BTS7960 oder ähnlich)
+# Linker Motorcontroller
+MOTOR_LEFT_RPWM = 12        # GPIO 12 (Pin 32) - Rechts PWM für linken Motor
+MOTOR_LEFT_LPWM = 13        # GPIO 13 (Pin 33) - Links PWM für linken Motor
+# Rechter Motorcontroller
+MOTOR_RIGHT_RPWM = 18       # GPIO 18 (Pin 12) - Rechts PWM für rechten Motor
+MOTOR_RIGHT_LPWM = 10       # GPIO 10 (Pin 19) - Links PWM für rechten Motor
 
 # GPIO Pin Assignments for HC-SR04 Ultrasonic Sensors
-# Sensor 1 (Rechts): Trigger=GPIO 20, Echo=GPIO 21
-# Sensor 2 (Links): Trigger=GPIO 13 (PWM), Echo=GPIO 6
-# Sensor 3 (Front): Trigger=GPIO 19 (MISO), Echo=GPIO 16 (Chip Enable-C2)
-ULTRASONIC_FRONT_TRIGGER = 19   # GPIO 19 (MISO) - Front Sensor Trigger
-ULTRASONIC_FRONT_ECHO = 16      # GPIO 16 (Chip Enable-C2) - Front Sensor Echo
-ULTRASONIC_LEFT_TRIGGER = 13    # GPIO 13 (PWM) - Links Sensor Trigger
-ULTRASONIC_LEFT_ECHO = 6        # GPIO 6 - Links Sensor Echo
-ULTRASONIC_RIGHT_TRIGGER = 20  # GPIO 20 - Rechts Sensor Trigger
-ULTRASONIC_RIGHT_ECHO = 21     # GPIO 21 - Rechts Sensor Echo
+# Sensor 1: Trigger=GPIO 20 (Pin 38), Echo=GPIO 21 (Pin 40)
+# Sensor 2: Trigger=GPIO 16 (Pin 36), Echo=GPIO 26 (Pin 37)
+# Sensor 3: Trigger=GPIO 5 (Pin 29), Echo=GPIO 6 (Pin 31)
+ULTRASONIC_SENSOR1_TRIGGER = 20  # GPIO 20 (Pin 38) - Sensor 1 Trigger
+ULTRASONIC_SENSOR1_ECHO = 21     # GPIO 21 (Pin 40) - Sensor 1 Echo (über Spannungsteiler)
+ULTRASONIC_SENSOR2_TRIGGER = 16  # GPIO 16 (Pin 36) - Sensor 2 Trigger
+ULTRASONIC_SENSOR2_ECHO = 26     # GPIO 26 (Pin 37) - Sensor 2 Echo (über Spannungsteiler)
+ULTRASONIC_SENSOR3_TRIGGER = 5   # GPIO 5 (Pin 29) - Sensor 3 Trigger
+ULTRASONIC_SENSOR3_ECHO = 6      # GPIO 6 (Pin 31) - Sensor 3 Echo (über Spannungsteiler)
+
+# Legacy Aliases für Kompatibilität (werden auf Sensor 1, 2, 3 gemappt)
+ULTRASONIC_RIGHT_TRIGGER = ULTRASONIC_SENSOR1_TRIGGER
+ULTRASONIC_RIGHT_ECHO = ULTRASONIC_SENSOR1_ECHO
+ULTRASONIC_LEFT_TRIGGER = ULTRASONIC_SENSOR2_TRIGGER
+ULTRASONIC_LEFT_ECHO = ULTRASONIC_SENSOR2_ECHO
+ULTRASONIC_FRONT_TRIGGER = ULTRASONIC_SENSOR3_TRIGGER
+ULTRASONIC_FRONT_ECHO = ULTRASONIC_SENSOR3_ECHO
 
 # GPIO Pin Assignment for N20 Side Brush Relay
 SIDE_BRUSH_RELAY = 27
@@ -37,6 +45,7 @@ SOUND_SPEED = 343            # Speed of sound in m/s at 20°C
 # Safety Thresholds
 WARNING_DISTANCE_CM = 4      # Distance for warning (orange) in cm
 COLLISION_DISTANCE_CM = 2    # Distance for collision danger (red) in cm - triggers avoidance
+MIN_DISTANCE_CM = WARNING_DISTANCE_CM  # Alias für Kompatibilität
 
 # Level Shifter Configuration
 # Note: Level shifter is used for 3.3V <-> 5V conversion

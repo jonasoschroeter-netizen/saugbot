@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from ultrasonic_sensor import UltrasonicSensorArray
-    from config import COLLISION_DISTANCE_CM, MIN_DISTANCE_CM
+    from config import COLLISION_DISTANCE_CM, WARNING_DISTANCE_CM
     SENSORS_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Could not import sensors: {e}")
@@ -218,5 +218,5 @@ def update_config():
 
 if __name__ == '__main__':
     print("Starting Saugbot Web Interface...")
-    print("Open http://raspberrypi.local:5000 or http://192.168.0.5:5000 in your browser")
+    print("Open http://saugbot.local:5000 or http://192.168.37.207:5000 in your browser")
     app.run(host='0.0.0.0', port=5000, debug=True)
