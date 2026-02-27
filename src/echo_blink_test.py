@@ -15,7 +15,10 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-TRIG, ECHO = 20, 21  # Sensor 1
+# Sensor: 1=Rechts(20/21), 2=Links(16/26), 3=Front(5/4)
+SENSOR = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+PINS = {1: (20, 21), 2: (16, 26), 3: (5, 4)}
+TRIG, ECHO = PINS.get(SENSOR, (20, 21))
 
 GPIO.setup(TRIG, GPIO.OUT)
 GPIO.setup(ECHO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -25,7 +28,8 @@ time.sleep(0.1)
 print("=" * 50)
 print("  ECHO-BLINK-TEST (30 Sekunden)")
 print("=" * 50)
-print("Halte Sensor 1 vor einen Gegenstand (10-50cm)!")
+print(f"Teste Sensor {SENSOR} (Trigger={TRIG}, Echo={ECHO})")
+print("Halte Sensor vor einen Gegenstand (10-50cm)!")
 print("Bei Echo-Signal erscheint: *** ECHO! ***")
 print()
 
