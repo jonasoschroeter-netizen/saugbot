@@ -128,11 +128,13 @@ class UltrasonicSensorArray:
         Returns:
             Dictionary with 'front', 'left', 'right' distances in cm
         """
-        return {
-            'front': self.front.get_distance_cm(),
-            'left': self.left.get_distance_cm(),
-            'right': self.right.get_distance_cm()
-        }
+        # 70ms Pause zwischen Sensoren (HC-SR04 braucht min. 60ms)
+        front = self.front.get_distance_cm()
+        time.sleep(0.07)
+        left = self.left.get_distance_cm()
+        time.sleep(0.07)
+        right = self.right.get_distance_cm()
+        return {'front': front, 'left': left, 'right': right}
     
     def cleanup(self):
         """Clean up GPIO resources."""
