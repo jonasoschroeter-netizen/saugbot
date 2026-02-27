@@ -55,18 +55,25 @@ class UltrasonicSensor:
             time.sleep(0.00001)  # 10 microseconds
             GPIO.output(self.trigger_pin, GPIO.LOW)
             
-            # Use wait_for_edge for precise timing (Echo-Puls ist nur ~0.3-0.5ms!)
-            timeout_ms = int(ULTRASONIC_TIMEOUT * 1000)
+            # Echo-Puls ist nur ~0.3-0.5ms - schnelles Polling (ohne sleep = schnell)
+            timeout = time.time() + ULTRASONIC_TIMEOUT
+            echo_start = None
+            echo_end = None
             
-            # Wait for echo RISING edge
-            if GPIO.wait_for_edge(self.echo_pin, GPIO.RISING, timeout=timeout_ms) is None:
-                return None
+            # Warte auf Echo HIGH
+            while GPIO.input(self.echo_pin) == GPIO.LOW:
+                if time.time() > timeout:
+                    return None
             echo_start = time.time()
             
-            # Wait for echo FALLING edge
-            if GPIO.wait_for_edge(self.echo_pin, GPIO.FALLING, timeout=timeout_ms) is None:
+            # Warte auf Echo LOW, messe Dauer
+            while GPIO.input(self.echo_pin) == GPIO.HIGH:
+                if time.time() > timeout:
+                    return None
+                echo_end = time.time()
+            
+            if echo_start is None or echo_end is None:
                 return None
-            echo_end = time.time()
             
             # Calculate distance
             pulse_duration = echo_end - echo_start
