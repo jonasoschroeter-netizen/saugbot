@@ -55,33 +55,18 @@ class UltrasonicSensor:
             time.sleep(0.00001)  # 10 microseconds
             GPIO.output(self.trigger_pin, GPIO.LOW)
             
-            # Wait for echo to go HIGH (with timeout)
-            start_time = time.time()
-            timeout = start_time + ULTRASONIC_TIMEOUT
-            echo_start = None
+            # Use wait_for_edge for precise timing (Echo-Puls ist nur ~0.3-0.5ms!)
+            timeout_ms = int(ULTRASONIC_TIMEOUT * 1000)
             
-            # Wait for echo pin to go HIGH
-            while GPIO.input(self.echo_pin) == GPIO.LOW:
-                if time.time() > timeout:
-                    # print(f"{self.name}: Timeout waiting for echo HIGH")
-                    return None
-                time.sleep(0.00001)  # Small delay to prevent busy waiting
-            
+            # Wait for echo RISING edge
+            if GPIO.wait_for_edge(self.echo_pin, GPIO.RISING, timeout=timeout_ms) is None:
+                return None
             echo_start = time.time()
             
-            # Wait for echo pin to go LOW
-            timeout = echo_start + ULTRASONIC_TIMEOUT
-            echo_end = None
-            
-            while GPIO.input(self.echo_pin) == GPIO.HIGH:
-                if time.time() > timeout:
-                    # print(f"{self.name}: Timeout waiting for echo LOW")
-                    return None
-                echo_end = time.time()
-                time.sleep(0.00001)  # Small delay to prevent busy waiting
-            
-            if echo_start is None or echo_end is None:
+            # Wait for echo FALLING edge
+            if GPIO.wait_for_edge(self.echo_pin, GPIO.FALLING, timeout=timeout_ms) is None:
                 return None
+            echo_end = time.time()
             
             # Calculate distance
             pulse_duration = echo_end - echo_start
@@ -89,7 +74,6 @@ class UltrasonicSensor:
             
             # HC-SR04 range is 2-400cm, filter invalid readings
             if distance_cm < 2 or distance_cm > 400:
-                # print(f"{self.name}: Distance out of range: {distance_cm:.1f}cm")
                 return None
             
             return round(distance_cm, 1)
