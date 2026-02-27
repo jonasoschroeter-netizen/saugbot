@@ -23,14 +23,14 @@ GPIO.setwarnings(False)
 TRIGGER_PINS = [
     (20, "Sensor 1 (Rechts) - Pin 38"),
     (16, "Sensor 2 (Links) - Pin 36"),
-    (3, "Sensor 3 (Mitte) - Pin 27"),
+    (0, "Sensor 3 (Mitte) - Pin 27 (GPIO 0)"),
 ]
 
 # Alle Echo-Pins (Eingang vom Sensor - Pi liest nur, sendet nicht)
 ECHO_PINS = [
     (21, "Sensor 1 (Rechts) - Pin 40"),
     (26, "Sensor 2 (Links) - Pin 37"),
-    (4, "Sensor 3 (Mitte) - Pin 28"),
+    (1, "Sensor 3 (Mitte) - Pin 28 (GPIO 1)"),
 ]
 
 print("=" * 60)

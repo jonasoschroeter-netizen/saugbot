@@ -14,13 +14,13 @@ MOTOR_RIGHT_LPWM = 10       # GPIO 10 (Pin 19) - Links PWM für rechten Motor
 # GPIO Pin Assignments for HC-SR04 Ultrasonic Sensors
 # Sensor 1: Trigger=GPIO 20 (Pin 38), Echo=GPIO 21 (Pin 40)
 # Sensor 2: Trigger=GPIO 16 (Pin 36), Echo=GPIO 26 (Pin 37)
-# Sensor 3 (Mitte/Front): Trigger=GPIO 3 (Pin 27), Echo=GPIO 4 (Pin 28)
+# Sensor 3 (Mitte/Front): Trigger=GPIO 0 (Pin 27), Echo=GPIO 1 (Pin 28)
 ULTRASONIC_SENSOR1_TRIGGER = 20  # GPIO 20 (Pin 38) - Sensor 1 Trigger
 ULTRASONIC_SENSOR1_ECHO = 21     # GPIO 21 (Pin 40) - Sensor 1 Echo (über Spannungsteiler)
 ULTRASONIC_SENSOR2_TRIGGER = 16  # GPIO 16 (Pin 36) - Sensor 2 Trigger
 ULTRASONIC_SENSOR2_ECHO = 26     # GPIO 26 (Pin 37) - Sensor 2 Echo (über Spannungsteiler)
-ULTRASONIC_SENSOR3_TRIGGER = 3   # GPIO 3 (Pin 27) - Sensor 3 Trigger
-ULTRASONIC_SENSOR3_ECHO = 4      # GPIO 4 (Pin 28) - Sensor 3 Echo (über Spannungsteiler)
+ULTRASONIC_SENSOR3_TRIGGER = 0   # GPIO 0 (Pin 27) - Sensor 3 Trigger
+ULTRASONIC_SENSOR3_ECHO = 1      # GPIO 1 (Pin 28) - Sensor 3 Echo (über Spannungsteiler)
 
 # Legacy Aliases für Kompatibilität (werden auf Sensor 1, 2, 3 gemappt)
 ULTRASONIC_RIGHT_TRIGGER = ULTRASONIC_SENSOR1_TRIGGER
