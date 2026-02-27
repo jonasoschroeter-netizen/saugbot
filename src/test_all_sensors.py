@@ -67,11 +67,12 @@ def main():
             
             # Statistik anzeigen (alle 10 Messungen)
             if iteration % 10 == 0:
+                sf = format_distance(distances['front'])
+                sl = format_distance(distances['left'])
+                sr = format_distance(distances['right'])
                 print("-" * 70)
                 print("  Statistik (letzte 10 Messungen):")
-                print(f"  Front:  {distances['front']:.1f}cm | "
-                      f"Links: {distances['left']:.1f}cm | "
-                      f"Rechts: {distances['right']:.1f}cm")
+                print(f"  Front:  {sf} | Links: {sl} | Rechts: {sr}")
                 print("-" * 70)
                 print()
             
