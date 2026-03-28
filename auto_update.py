@@ -62,8 +62,10 @@ def update_repository():
     # Stash lokale Änderungen (falls vorhanden)
     run_command("git stash")
     
-    # Pull Updates
-    success, stdout, stderr = run_command(f"git pull origin {GIT_BRANCH}")
+    # Pull Updates (explizit: vermeidet "Need to specify how to reconcile divergent branches" bei neueren Git-Versionen)
+    success, stdout, stderr = run_command(
+        f"git -c pull.rebase=false pull --no-edit origin {GIT_BRANCH}"
+    )
     
     if success:
         msg = "✅ Repository erfolgreich aktualisiert!\n"
